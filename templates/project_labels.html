@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Labels - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-tags"></i> Labels for {{ project.name }}</h4>
+                <a href="{% url 'label_create' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus"></i> Add Custom Label
+                </a>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Labels help categorize different types of attributes of this project.</p>
+            </div>
+        </div>
+
+                {% if labels %}
+                    <div class="row">
+                        {% for label in labels %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card h-100" style="border-left: 4px solid {{ label.color }};">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-circle me-2" style="color: {{ label.color }};"></i>
+                                            <h6 class="card-title mb-0">{{ label.name }}</h6>
+                                        </div>
+                                        {% if label.description %}
+                                            <p class="card-text text-muted small">{{ label.description }}</p>
+                                        {% else %}
+                                            <p class="card-text text-muted small">No description provided</p>
+                                        {% endif %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                Created by {{ label.created_by.username }}
+                                            </small>
+                                            {% if label.is_static %}
+                                                <span class="badge bg-secondary">Default</span>
+                                            {% else %}
+                                                <span class="badge bg-primary">Custom</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-tags fa-4x text-muted mb-3"></i>
+                            <h5>No labels yet</h5>
+                            <p class="text-muted">Create your first label to start annotating text.</p>
+                            <a href="{% url 'label_create' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create First Label
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+        <div class="card-footer text-center">
+            <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

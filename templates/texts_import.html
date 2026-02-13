@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Data - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-upload"></i> Import Data</h4>
+                <small>{{ project.name }}</small>
+            </div>
+            <div class="card-body">
+                <!-- Import Type Selection -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="fas fa-cog"></i> Import Type</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="import_type" id="single_file_import" value="single" checked>
+                        <label class="form-check-label" for="single_file_import">
+                            <strong>Single File Import</strong> - Import plain text or annotated data from one CSV file
+                        </label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="import_type" id="dual_file_import" value="dual">
+                        <label class="form-check-label" for="dual_file_import">
+                            <strong>Dual File Import</strong> - Import text from one CSV and annotations from another CSV
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Single File Import Instructions -->
+                <div id="single_file_instructions" class="import-instructions">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Single File CSV Format:</strong> Your CSV file should have the following columns:
+                        <br><code>ID, Content</code> or <code>id, text</code>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Example CSV format:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Content</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>গুলশান-২ এ শাহবুদ্দিন পার্কের উলটো দিকে...</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>আমার তো কোনো ক্ষতি হচ্ছে না...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dual File Import Instructions -->
+                <div id="dual_file_instructions" class="import-instructions" style="display: none;">
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Dual File Import Instructions:</strong>
+                        <ul class="mt-2">
+                            <li><strong>First CSV (Texts):</strong> Must contain <code>ID</code> and <code>Text</code> columns (plus optional columns)</li>
+                            <li><strong>Second CSV (Annotations):</strong> Must contain <code>input_text_id</code>, <code>content</code>, <code>start_index</code>, <code>error_cat</code>, <code>corrections</code> columns</li>
+                            <li><strong>Mapping:</strong> <code>input_text_id</code> in annotations CSV maps to <code>ID</code> in texts CSV</li>
+                            <li><strong>Multiple annotations:</strong> Same <code>input_text_id</code> can appear multiple times for different error annotations</li>
+                        </ul>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Text CSV Example:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>content</th>
+                                            <th>source_cat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>তৃষিত নয়নে ইতি উতি খুজি</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>ভাই আমারে ভালো নাহ লাগ্লে ব্লক দিতে পারেন ???</td>
+                                            <td>0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Annotations CSV Example:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>input_text_id</th>
+                                            <th>content</th>
+                                            <th>start_index</th>
+                                            <th>error_cat</th>
+                                            <th>corrections</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>1</td>
+                                            <td>খুজি</td>
+                                            <td>19</td>
+                                            <td>NON_WORD_ERROR</td>
+                                            <td>খুঁজি</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>2</td>
+                                            <td>লাগ্লে</td>
+                                            <td>19</td>
+                                            <td>NON_WORD_ERROR</td>
+                                            <td>লাগলে</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="import_type" id="hidden_import_type" value="single">
+
+                    <!-- Single File Upload -->
+                    <div id="single_file_upload" class="file-upload-section">
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">
+                                <i class="fas fa-file-csv"></i> Select CSV file
+                            </label>
+                            <input type="file" class="form-control" name="csv_file" id="csv_file" accept=".csv" required>
+                            <div class="form-text">Only CSV files are accepted. Maximum file size: 10MB</div>
+                        </div>
+                    </div>
+
+                    <!-- Dual File Upload -->
+                    <div id="dual_file_upload" class="file-upload-section" style="display: none;">
+                        <div class="mb-3">
+                            <label for="text_csv_file" class="form-label">
+                                <i class="fas fa-file-csv"></i> Text CSV File (Required)
+                            </label>
+                            <input type="file" class="form-control" name="text_csv_file" id="text_csv_file" accept=".csv" required>
+                            <div class="form-text">CSV file containing raw texts with ID and Text columns</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="annotation_csv_file" class="form-label">
+                                <i class="fas fa-file-csv"></i> Annotation CSV File (Required)
+                            </label>
+                            <input type="file" class="form-control" name="annotation_csv_file" id="annotation_csv_file" accept=".csv" required>
+                            <div class="form-text">CSV file containing annotations</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload"></i> Import Texts
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Project
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle import instructions based on selection
+    document.querySelectorAll('input[name="import_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const importType = this.value;
+            document.getElementById('hidden_import_type').value = importType;
+
+            // Toggle instructions
+            document.getElementById('single_file_instructions').style.display =
+                importType === 'single' ? 'block' : 'none';
+            document.getElementById('dual_file_instructions').style.display =
+                importType === 'dual' ? 'block' : 'none';
+
+            // Toggle file upload sections
+            document.getElementById('single_file_upload').style.display =
+                importType === 'single' ? 'block' : 'none';
+            document.getElementById('dual_file_upload').style.display =
+                importType === 'dual' ? 'block' : 'none';
+
+            // Update required fields
+            if (importType === 'single') {
+                document.getElementById('csv_file').required = true;
+                document.getElementById('text_csv_file').required = false;
+                document.getElementById('annotation_csv_file').required = false;
+            } else {
+                document.getElementById('csv_file').required = false;
+                document.getElementById('text_csv_file').required = true;
+                document.getElementById('annotation_csv_file').required = false;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

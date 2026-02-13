@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ project.name }} - Annotation Tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Annotation styles for project detail page */
+    .annotation-span {
+        position: relative;
+        display: inline;
+        border-bottom: 0px solid;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 0;
+        transition: all 0.3s ease;
+        margin: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        pointer-events: none;
+        line-height: normal;
+        background-clip: content-box;
+        box-decoration-break: clone;
+    }
+    .annotation-span:hover {
+        pointer-events: auto;
+        opacity: 0.85;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .annotation-info {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.9);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 500;
+        white-space: nowrap;
+        z-index: 1000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.2);
+        margin-top: 2px;
+    }
+    .annotation-span:hover .annotation-info {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-project-diagram"></i> {{ project.name }}</h4>
+                    {% if can_manage_project %}
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog"></i> Manage
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% if project.owner == user %}
+                                    <li><a class="dropdown-item" href="{% url 'texts_import' user_id=project.owner.id user_project_id=project.user_project_id %}">
+                                        <i class="fas fa-upload"></i> Import Data
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'project_collaborators' user_id=project.owner.id user_project_id=project.user_project_id %}">
+                                        <i class="fas fa-users"></i> Collaborators
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'export_annotations' user_id=project.owner.id user_project_id=project.user_project_id %}?format=csv">
+                                        <i class="fas fa-download"></i> Export CSV
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'export_annotations' user_id=project.owner.id user_project_id=project.user_project_id %}?format=json">
+                                        <i class="fas fa-download"></i> Export JSON
+                                    </a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'project_labels' user_id=project.owner.id user_project_id=project.user_project_id %}">
+                                    <i class="fas fa-tags"></i> Manage Labels
+                                </a></li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ project.description }}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> Owner: <strong>{{ project.owner.username }}</strong>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted">
+                            Created: {{ project.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-tags"></i> Labels</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if labels %}
+                            <div class="list-group list-group-flush">
+                                {% for label in labels %}
+                                    <div class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-circle me-1" style="color: {{ label.color }};"></i>
+                                        <div>
+                                            <strong>{{ label.name }}</strong>
+                                            {% if label.description %}
+                                                <br><small class="text-muted">{{ label.description }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">No labels defined yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-alt"></i> Texts</h5>
+                        <span class="badge bg-light text-dark">{{ page_obj.paginator.count }} total</span>
+                    </div>
+                    <div class="card-body">
+                        {% if page_obj %}
+                            <div class="row">
+                                {% for item in page_obj %}
+                                    <div class="col-12 mb-3">
+                                        <div class="card h-100 {% if item.has_annotations %}border-warning{% endif %}">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="card-title mb-0">{{ item.text.text_id }}</h6>
+                                                    {% if item.has_annotations %}
+                                                        <span class="badge bg-warning text-dark">
+                                                            <i class="fas fa-tag"></i> {{ item.annotation_count }} annotation{{ item.annotation_count|pluralize }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">
+                                                            <i class="fas fa-circle"></i> Not annotated
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="card-text mb-3" style="font-size: 14px; line-height: 1.4;">
+                                                    {% if item.has_annotations %}
+                                                        {{ item.text.text|render_with_annotations:item.annotations_json|safe }}
+                                                    {% else %}
+                                                        {{ item.text.text|default:"No text content"|linebreaksbr }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-end">
+                                                    {% if item.has_annotations %}
+                                                        <a href="{% url 'text_annotate' user_id=project.owner.id user_project_id=project.user_project_id text_id=item.text.id %}?page={{ page_obj.number }}" class="btn btn-warning btn-sm">
+                                                            <i class="fas fa-edit"></i> Re-Annotate
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% url 'text_annotate' user_id=project.owner.id user_project_id=project.user_project_id text_id=item.text.id %}?page={{ page_obj.number }}" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-edit"></i> Annotate
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Pagination -->
+                            {% if page_obj.has_other_pages %}
+                                <nav aria-label="Text pagination" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                                    <i class="fas fa-chevron-left"></i> Previous
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    <i class="fas fa-chevron-left"></i> Previous
+                                                </span>
+                                            </li>
+                                        {% endif %}
+
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                                    Next <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    Next <i class="fas fa-chevron-right"></i>
+                                                </span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+
+                                <div class="text-center text-muted mt-2">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    ({{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} texts)
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                <h5>No text yet</h5>
+                                <p class="text-muted">Import text to start annotating.</p>
+                                {% if project.owner == user %}
+                                    <a href="{% url 'texts_import' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-primary">
+                                        <i class="fas fa-upload"></i> Import Texts
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

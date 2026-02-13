@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Label - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-plus"></i> Create New Label</h4>
+                <small>{{ project.name }}</small>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Label Purpose:</strong> Labels help categorize different types of attributes of this project.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag"></i> Label Name *
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.name.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Choose a descriptive name for your label (e.g., "Spelling Error", "Grammar Mistake")</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.color.id_for_label }}" class="form-label">
+                            <i class="fas fa-palette"></i> Color *
+                        </label>
+                        <div class="input-group">
+                            {{ form.color }}
+                            <span class="input-group-text">
+                                <i class="fas fa-circle" id="colorPreview" style="color: #007bff;"></i>
+                            </span>
+                        </div>
+                        {% if form.color.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.color.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Select a color to visually distinguish this label</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left"></i> Description (Optional)
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Provide additional details about when to use this label</div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save"></i> Create Label
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'project_labels' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Labels
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update color preview when color input changes
+    document.getElementById('{{ form.color.id_for_label }}').addEventListener('input', function() {
+        document.getElementById('colorPreview').style.color = this.value;
+    });
+
+    // Set initial color preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const colorInput = document.getElementById('{{ form.color.id_for_label }}');
+        if (colorInput && colorInput.value) {
+            document.getElementById('colorPreview').style.color = colorInput.value;
+        }
+    });
+</script>
+{% endblock %}

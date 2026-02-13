@@ -1,0 +1,1246 @@
+{% extends 'base.html' %}
+
+{% block title %}Annotate Text - Bangla Annotation Tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    .selected-label {
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+        color: white !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        transform: scale(1.05) !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+    .selected-label i {
+        color: white !important;
+    }
+    .selected-label strong {
+        color: white !important;
+    }
+    .selected-label small {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    .label-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 123, 255, 0.95);
+        color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-weight: bold;
+        border: 2px solid white;
+    }
+    #text-container {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        background-color: #ffffff;
+        line-height: 2;
+        font-size: 1.1rem;
+        min-height: 250px;
+        cursor: text;
+        position: relative;
+        user-select: text;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        transition: border-color 0.3s ease;
+    }
+    .annotation-span {
+        position: relative;
+        display: inline;
+        border-bottom: 0px solid;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 0;
+        transition: all 0.3s ease;
+        margin: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        pointer-events: none;
+        line-height: normal;
+        background-clip: content-box;
+        box-decoration-break: clone;
+    }
+    .annotation-span:hover {
+        pointer-events: auto;
+        opacity: 0.85;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .annotation-info {
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.9);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        z-index: 1000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .annotation-span:hover .annotation-info {
+        opacity: 1;
+    }
+    .annotation-remove-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #dc3545;
+        color: white;
+        border: 2px solid white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        display: none;
+        z-index: 1001;
+        line-height: 1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
+    .annotation-remove-btn:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+    .annotation-span:hover .annotation-remove-btn {
+        display: block;
+    }
+    .text-selection-highlight {
+        background-color: rgba(255, 255, 0, 0.4) !important;
+        border-radius: 3px;
+    }
+    .annotation-form {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 15px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .annotation-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .annotation-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .btn-annotate {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
+    }
+    .btn-annotate:hover {
+        background: linear-gradient(135deg, #218838 0%, #17a2b8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    }
+    .btn-reannotate {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        border: none;
+        color: #212529;
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        transition: all 0.3s ease;
+    }
+    .btn-reannotate:hover {
+        background: linear-gradient(135deg, #e0a800 0%, #e8590c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+    }
+    .suggestion-input {
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        padding: 12px;
+        width: 100%;
+        margin-bottom: 15px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+    .suggestion-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+    .temp-selection {
+        background-color: rgba(255, 193, 7, 0.3) !important;
+        border: 2px dashed #ffc107 !important;
+        border-radius: 4px;
+        animation: pulse 1.5s infinite;
+    }
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .suggestion-item input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 14px;
+    }
+    .suggestion-item button {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+    .suggestion-item button:hover {
+        background: #dc3545;
+        color: white;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
+
+
+<div class="row">
+    <div class="col-12">
+        <!-- Text Header -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-alt"></i> Text: {{ text.text_id }}
+                    <span id="annotation-status" class="badge ms-2
+                        {% if annotations %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                        {% if annotations %}Annotated{% else %}Not Annotated{% endif %}
+                    </span>
+                </h4>
+            </div>
+        </div>
+
+        <!-- Step 1: Label Selection -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-tags"></i> Step 1: Select Error Label</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Click on a label to select it for annotation.</p>
+                <div class="d-flex flex-wrap gap-3" id="label-buttons">
+                    {% for label in labels %}
+                        <button class="btn btn-outline-primary label-btn px-1.5 py-1" data-label-id="{{ label.id }}" data-label-name="{{ label.name }}" data-color="{{ label.color }}">
+                            <i class="fas fa-circle me-2" style="color: {{ label.color }};"></i>
+                            <strong>{{ label.name }}</strong>
+                            {% if label.description %}
+                                <br><small class="text-muted">{{ label.description|truncatechars:30 }}</small>
+                            {% endif %}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Text Selection -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-mouse-pointer"></i> Step 2: Select Error Text</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Instructions:</strong> First select a label above, then highlight the error text below. The selected text will be underlined with the label's color.
+                </div>
+
+                <!-- Temporary Selection Form -->
+                <div id="temp-selection-form" class="annotation-form">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-plus-circle"></i> Add Annotation for: "<span id="temp-selected-text"></span>"
+                    </h6>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Suggestions (Optional):</strong></label>
+                        <div id="suggestions-container">
+                            <!-- Suggestions will be added here dynamically -->
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <input type="text" id="new-suggestion-input" class="form-control" placeholder="Enter a suggestion..." style="flex: 1;">
+                            <button id="add-suggestion-btn" class="btn btn-outline-primary" type="button">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-1">Add suggestions one by one. Each suggestion will be saved separately.</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="confirm-annotation-btn" class="btn btn-annotate">
+                            <i class="fas fa-check"></i> Confirm Annotation
+                        </button>
+                        <button id="cancel-annotation-btn" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Text Container -->
+                <div id="text-container">
+                    {% load custom_filters %}
+                    {{ text.text|render_with_annotations:annotations_json|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Annotations List -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Step 3: Annotations
+                    <span id="annotation-count" class="badge bg-primary ms-2">{{ annotations|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body" id="annotations-container">
+                {% if annotations %}
+                    {% for ann in annotations %}
+                        <div class="annotation-item" data-ann-id="{{ ann.id }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="mb-2">
+                                        <span class="badge px-3 py-2" style="background-color: {{ ann.label.color }}; color: white; font-size: 14px;">
+                                            <i class="fas fa-tag"></i> {{ ann.label.name }}
+                                        </span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong class="text-dark" style="font-size: 16px;">"{{ ann.annotated_text }}"</strong>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt"></i> Position: {{ ann.start_index }}-{{ ann.end_index }}
+                                            {% if ann.user != request.user %}
+                                                <span class="ms-2"><i class="fas fa-user"></i> Annotated by: {{ ann.user.username }}</span>
+                                            {% else %}
+                                                <span class="ms-2"><i class="fas fa-user-check"></i> Your annotation</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% if ann.suggestions %}
+                                        <div class="alert alert-info py-2 px-3 mb-0">
+                                            <strong><i class="fas fa-lightbulb"></i> Suggestions:</strong><br>
+                                            {% for suggestion in ann.suggestions %}
+                                                " {{ suggestion }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3">
+                                    <button onclick="editAnnotation({{ ann.id }})" class="btn btn-outline-primary btn-sm me-2" title="Edit annotation">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteAnnotation({{ ann.id }})" class="btn btn-outline-danger btn-sm" title="Delete annotation">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Annotations Yet</h5>
+                        <p class="text-muted">Select a label and highlight text above to create annotations.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}?page={{ request.GET.page|default:'1' }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Project
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden JSON data -->
+<div id="hidden-data" style="display: none;">
+    <span id="doc-text">{{ text.text }}</span>
+    <span id="annotations-json">{{ annotations_json|safe }}</span>
+    <span id="urls" data-delete-url="{% url 'delete_annotation' 0 %}"></span>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Global variables
+    let selectedLabelId = null;
+    let selectedLabelColor = null;
+    let selectedLabelName = null;
+    let currentAnnotations = [];
+    let tempSelection = null;
+    let isEditMode = false;
+    let csrfToken, textContainer, originalText, annotationsData;
+
+    // Global variables and functions
+    let renderAnnotations, updateAnnotationsList, updateAnnotationActions, updateAnnotationStatus;
+
+    // Global functions for HTML onclick attributes
+    function deleteAnnotation(annId) {
+        if (!confirm('Are you sure you want to delete this annotation?')) return;
+
+        // Get the base delete URL and replace the placeholder with actual ID
+        const urlsElement = document.getElementById('urls');
+        const baseDeleteUrl = urlsElement ? urlsElement.dataset.deleteUrl : '/annotation/0/delete/';
+        const deleteUrl = baseDeleteUrl.replace('/0/', `/${annId}/`);
+
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show updated server-rendered annotations
+                location.reload();
+            } else {
+                alert('Error deleting annotation');
+            }
+        });
+    }
+
+    function editAnnotation(annId) {
+        const ann = currentAnnotations.find(a => a.id === parseInt(annId));
+        if (!ann) return;
+
+        // Show suggestion edit form - convert array to newline-separated for editing
+        const currentSuggestions = Array.isArray(ann.suggestions) ? ann.suggestions : [];
+        const suggestionText = prompt('Edit suggestions for this annotation (one per line):', currentSuggestions.join('\n'));
+        if (suggestionText !== null) { // User didn't cancel
+            // Convert back to array and update
+            const suggestions = suggestionText.split('\n').map(s => s.trim()).filter(s => s);
+            updateAnnotationSuggestion(annId, suggestions);
+        }
+    }
+
+    function updateAnnotationSuggestion(annId, suggestions) {
+        fetch(`/project/{{ project.id }}/text/{{ text.id }}/update_annotation/${annId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'suggestions': JSON.stringify(suggestions)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show updated server-rendered annotations
+                location.reload();
+            } else {
+                alert('Error updating suggestions: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        textContainer = document.getElementById('text-container');
+        originalText = document.getElementById('doc-text').textContent;
+        annotationsData = JSON.parse(document.getElementById('annotations-json').textContent || '[]');
+
+        // Initialize
+        currentAnnotations = annotationsData.map(ann => ({
+            id: ann.id,
+            start_index: ann.start_index,
+            end_index: ann.end_index,
+            label: ann.label,
+            label_color: ann.label_color,
+            annotated_text: ann.annotated_text,
+            suggestion: ann.suggestions ? ann.suggestions.join('\n') : '',
+            user_id: ann.user_id || null,
+            username: ann.username || 'Unknown'
+        }));
+
+        // Step 1: Label Selection
+        document.querySelectorAll('.label-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                console.log('Label clicked:', this.dataset.labelName);
+
+                // Remove previous selection
+                document.querySelectorAll('.label-btn').forEach(b => b.classList.remove('selected-label'));
+
+                // Add selection to clicked button
+                this.classList.add('selected-label');
+                console.log('Added selected-label class');
+
+                // Update selected label variables
+                selectedLabelId = this.dataset.labelId;
+                selectedLabelColor = this.dataset.color;
+                selectedLabelName = this.dataset.labelName;
+                console.log('Selected label:', selectedLabelName, selectedLabelColor);
+
+                // Visual feedback on text container
+                textContainer.style.borderColor = selectedLabelColor;
+                textContainer.style.boxShadow = `0 0 0 3px ${selectedLabelColor}40`;
+                console.log('Updated text container styling');
+
+                // Enable text selection
+                updateAnnotationActions();
+            });
+        });
+
+        // Step 2: Text Selection
+        let selectionTimeout;
+        let isReannotateMode = false;
+
+        textContainer.addEventListener('mouseup', function(e) {
+            // Allow text selection without label in re-annotate mode
+            if (!selectedLabelId && !isReannotateMode) {
+                alert('Please select a label first!');
+                return;
+            }
+
+            clearTimeout(selectionTimeout);
+            selectionTimeout = setTimeout(() => {
+                handleTextSelection();
+            }, 10);
+        });
+
+        // Debug: Log current state
+        console.log('Current state - selectedLabelId:', selectedLabelId, 'isReannotateMode:', isReannotateMode);
+
+        function handleTextSelection() {
+            const selection = window.getSelection();
+            console.log('selection', selection);
+            if (selection.rangeCount === 0 || selection.isCollapsed) return;
+
+            // Get clean selected text without HTML
+            const selectedText = getCleanSelectedText(selection);
+            if (!selectedText) return;
+
+            // Get selection range
+            const range = selection.getRangeAt(0);
+
+            // Calculate positions based on original text, accounting for existing annotations
+            const positions = calculateTextPositions(range, selectedText);
+
+            if (positions.startPos === -1 || positions.endPos === -1) {
+                alert('Could not determine the selected text position. Please try selecting again.');
+                return;
+            }
+
+            // Validate that the calculated positions match the selected text
+            const actualText = originalText.substring(positions.startPos, positions.endPos);
+            if (actualText !== selectedText.trim()) {
+                alert('Text selection appears to be incorrect. The selected text does not match the calculated position. Please try selecting again.');
+                console.error('Text mismatch:', {
+                    selected: selectedText.trim(),
+                    actual: actualText,
+                    positions: positions
+                });
+                return;
+            }
+
+            // Clear previous temp selection
+            clearTempSelection();
+
+            // Store selection data
+            tempSelection = {
+                text: selectedText,
+                startPos: positions.startPos,
+                endPos: positions.endPos,
+                range: range
+            };
+
+            // Show annotation form
+            showAnnotationForm(selectedText);
+
+            // Clear text selection
+            selection.removeAllRanges();
+        }
+
+        function getCleanSelectedText(selection) {
+            // Create a temporary div to extract truly clean text
+            const tempDiv = document.createElement('div');
+
+            // Clone the selection contents
+            const range = selection.getRangeAt(0);
+            const clonedContents = range.cloneContents();
+
+            tempDiv.appendChild(clonedContents);
+
+            // Use innerText which strips all HTML and gives clean text
+            const cleanText = tempDiv.innerText || tempDiv.textContent || '';
+
+            // Additional cleanup: remove any remaining HTML-like artifacts
+            const finalText = cleanText.replace(/<[^>]*>/g, '').trim();
+
+            return finalText;
+        }
+
+        function calculateTextPositions(range, selectedText) {
+            console.log('Calculating positions for text:', selectedText);
+            console.log('range.startContainer:', range.startContainer);
+            console.log('range.startOffset:', range.startOffset);
+
+            // Method 1: Try direct DOM position mapping
+            let startPos = getTextPositionFromRange(range.startContainer, range.startOffset);
+            console.log('Calculated startPos:', startPos);
+            const endPos = startPos + selectedText.length;
+
+            // Validate that the calculated range matches the original text
+            if (startPos >= 0 && endPos <= originalText.length) {
+                const actualText = originalText.substring(startPos, endPos);
+                if (actualText === selectedText.trim()) {
+                    console.log('Position calculation successful - direct match');
+                    return { startPos, endPos };
+                }
+                console.log('Direct match failed, trying context-based search');
+            }
+
+            // Method 2: Use context-based intelligent matching
+            const contextMatch = findTextByContext(selectedText.trim(), range, startPos);
+            console.log('contextMatch.startPos:', contextMatch.startPos);
+            if (contextMatch.startPos !== -1) {
+                console.log('Context-based position found:', contextMatch);
+                return contextMatch;
+            }
+
+            // Method 3: Find all occurrences and pick the most likely one
+            const allMatches = findAllTextOccurrences(selectedText.trim());
+            if (allMatches.length > 0) {
+                const bestMatch = selectBestMatch(allMatches, range, startPos);
+                if (bestMatch) {
+                    console.log('Best match position found:', bestMatch);
+                    return bestMatch;
+                }
+            }
+
+            // Method 4: Direct text search as fallback for Unicode issues
+            console.log('Method 4: selectedText:', selectedText.trim());
+            console.log('Method 4: originalText:', originalText);
+            const directIndex = originalText.indexOf(selectedText.trim());
+            if (directIndex !== -1) {
+                console.log('Direct text search found position:', directIndex);
+                return {
+                    startPos: directIndex,
+                    endPos: directIndex + selectedText.trim().length
+                };
+            }
+
+            console.error('All position calculation methods failed');
+            return { startPos: -1, endPos: -1 };
+        }
+
+        function findTextByContext(targetText, range, approximateStart) {
+            try {
+                // Get context around the selection
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return { startPos: -1, endPos: -1 };
+
+                // Extract text before and after the selection
+                const tempRange = document.createRange();
+                tempRange.selectNodeContents(textContainer);
+
+                // Get text from the start of container to selection start
+                const beforeRange = document.createRange();
+                beforeRange.setStart(textContainer, 0);
+                beforeRange.setEnd(range.startContainer, range.startOffset);
+                const textBefore = beforeRange.toString();
+
+                // Get text from selection end to container end
+                const afterRange = document.createRange();
+                afterRange.setStart(range.endContainer, range.endOffset);
+                afterRange.setEnd(textContainer, textContainer.childNodes.length);
+                const textAfter = afterRange.toString();
+
+                // Construct context: before + target + after
+                const fullContext = textBefore + targetText + textAfter;
+
+                // Find this context in the original text
+                const contextStart = originalText.indexOf(fullContext);
+                if (contextStart !== -1) {
+                    const targetStart = contextStart + textBefore.length;
+                    return {
+                        startPos: targetStart,
+                        endPos: targetStart + targetText.length
+                    };
+                }
+
+                // Try with smaller context windows
+                const beforeContext = textBefore.slice(-20); // Last 20 chars before
+                const afterContext = textAfter.slice(0, 20);  // First 20 chars after
+                const smallContext = beforeContext + targetText + afterContext;
+
+                const smallContextStart = originalText.indexOf(smallContext);
+                if (smallContextStart !== -1) {
+                    const targetStart = smallContextStart + beforeContext.length;
+                    return {
+                        startPos: targetStart,
+                        endPos: targetStart + targetText.length
+                    };
+                }
+
+            } catch (e) {
+                console.warn('Context-based search failed:', e);
+            }
+
+            return { startPos: -1, endPos: -1 };
+        }
+
+        function findAllTextOccurrences(targetText) {
+            const occurrences = [];
+            let startIndex = 0;
+
+            while (true) {
+                const foundIndex = originalText.indexOf(targetText, startIndex);
+                if (foundIndex === -1) break;
+
+                occurrences.push({
+                    startPos: foundIndex,
+                    endPos: foundIndex + targetText.length
+                });
+
+                startIndex = foundIndex + 1;
+            }
+
+            return occurrences;
+        }
+
+        function selectBestMatch(occurrences, range, approximateStart) {
+            if (occurrences.length === 0) return null;
+            if (occurrences.length === 1) return occurrences[0];
+
+            console.log('Multiple occurrences found, selecting best match');
+
+            // Try to get context around the DOM selection
+            let selectionContext = '';
+            try {
+                const contextRange = document.createRange();
+                contextRange.setStart(range.startContainer, Math.max(0, range.startOffset - 10));
+                contextRange.setEnd(range.endContainer, Math.min(range.endContainer.length || range.endContainer.childNodes.length, range.endOffset + 10));
+                selectionContext = contextRange.toString();
+            } catch (e) {
+                console.warn('Could not get selection context');
+            }
+
+            // Find the occurrence that best matches the context
+            for (const occurrence of occurrences) {
+                const contextStart = Math.max(0, occurrence.startPos - 10);
+                const contextEnd = Math.min(originalText.length, occurrence.endPos + 10);
+                const fullContext = originalText.substring(contextStart, contextEnd);
+
+                if (selectionContext && fullContext.includes(selectionContext)) {
+                    console.log('Found match based on context');
+                    return occurrence;
+                }
+            }
+
+            // If context matching fails, prefer the occurrence closest to approximateStart
+            let bestMatch = occurrences[0];
+            let minDistance = Math.abs(occurrences[0].startPos - approximateStart);
+
+            for (let i = 1; i < occurrences.length; i++) {
+                const distance = Math.abs(occurrences[i].startPos - approximateStart);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    bestMatch = occurrences[i];
+                }
+            }
+
+            console.log('Selected closest match by position');
+            return bestMatch;
+        }
+
+
+
+        function getTextPositionFromRange(container, offset) {
+            // Walk through the DOM and map to original text positions
+            offset-=42; // Adjust the precalculated offset for selection shift issue for same word multiple positions
+            console.log('Adjusted offset in getTextPositionFromRange:', offset);
+            let position = 0;
+            let found = false;
+
+            function walkDOM(node) {
+                if (found) return;
+
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node === container) {
+                        position += offset;
+                        found = true;
+                        return;
+                    } else {
+                        position += node.textContent.length;
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Skip annotation spans and their contents when calculating position
+                    if (node.classList.contains('annotation-span')) {
+                        // For annotation spans, we need to account for the original text length
+                        const annId = node.getAttribute('data-ann-id');
+                        const annotation = currentAnnotations.find(a => a.id == annId);
+                        if (annotation) {
+                            if (node === container || node.contains(container)) {
+                                // Selection is within or at this annotation span
+                                const relativeOffset = getRelativeOffsetInAnnotation(node, container, offset);
+                                position += annotation.start_index + relativeOffset;
+                                found = true;
+                                return;
+                            } else {
+                                // Skip the entire annotation length
+                                position += (annotation.end_index - annotation.start_index);
+                            }
+                        } else {
+                            // Annotation not found, treat as regular text
+                            for (let child of node.childNodes) {
+                                walkDOM(child);
+                                if (found) return;
+                            }
+                        }
+                    } else if (node.classList.contains('annotation-info') ||
+                               node.classList.contains('annotation-remove-btn')) {
+                        // Skip annotation UI elements
+                        return;
+                    } else {
+                        // Regular element, traverse children
+                        for (let child of node.childNodes) {
+                            walkDOM(child);
+                            if (found) return;
+                        }
+                    }
+                }
+            }
+
+            walkDOM(textContainer);
+            return found ? position : -1;
+        }
+
+        function getRelativeOffsetInAnnotation(spanElement, targetContainer, targetOffset) {
+            // Calculate the relative position within an annotation span
+            let offset = 0;
+            let found = false;
+
+            function walkAnnotation(node) {
+                if (found) return;
+
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node === targetContainer) {
+                        offset += targetOffset;
+                        found = true;
+                        return;
+                    } else {
+                        offset += node.textContent.length;
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE &&
+                          !node.classList.contains('annotation-info') &&
+                          !node.classList.contains('annotation-remove-btn')) {
+                    for (let child of node.childNodes) {
+                        walkAnnotation(child);
+                        if (found) return;
+                    }
+                }
+            }
+
+            walkAnnotation(spanElement);
+            return found ? offset : 0;
+        }
+
+        function highlightTempSelection(range, color) {
+            try {
+                // Try the standard surroundContents method first
+                const span = document.createElement('span');
+                span.className = 'temp-selection';
+                span.style.backgroundColor = `${color}30`;
+                span.style.borderColor = color;
+                span.style.borderRadius = '3px';
+                span.style.padding = '2px';
+
+                // Extract the contents and surround them
+                const contents = range.extractContents();
+                span.appendChild(contents);
+                range.insertNode(span);
+
+                // Select the span for potential removal
+                tempSelection.span = span;
+            } catch (e) {
+                // Fallback method if surroundContents fails
+                console.warn('surroundContents failed, using fallback method:', e);
+
+                const span = document.createElement('span');
+                span.className = 'temp-selection';
+                span.style.backgroundColor = `${color}30`;
+                span.style.borderColor = color;
+                span.style.borderRadius = '3px';
+                span.style.padding = '2px';
+
+                // Use the clean selected text instead of range.toString()
+                const selectedText = tempSelection.text;
+
+                // Replace the range content with the span
+                const textNode = document.createTextNode(selectedText);
+                span.appendChild(textNode);
+                range.deleteContents();
+                range.insertNode(span);
+
+                tempSelection.span = span;
+            }
+        }
+
+        function clearTempSelection() {
+            // If we have a stored span reference, remove it directly
+            if (tempSelection && tempSelection.span) {
+                const span = tempSelection.span;
+                if (span.parentNode) {
+                    const parent = span.parentNode;
+                    while (span.firstChild) {
+                        parent.insertBefore(span.firstChild, span);
+                    }
+                    parent.removeChild(span);
+                }
+            } else {
+                // Fallback: remove all temp selection spans
+                const tempSpans = textContainer.querySelectorAll('.temp-selection');
+                tempSpans.forEach(span => {
+                    const parent = span.parentNode;
+                    if (parent) {
+                        while (span.firstChild) {
+                            parent.insertBefore(span.firstChild, span);
+                        }
+                        parent.removeChild(span);
+                    }
+                });
+            }
+            tempSelection = null;
+            hideAnnotationForm();
+        }
+
+        function showAnnotationForm(selectedText) {
+            const form = document.getElementById('temp-selection-form');
+            const textSpan = document.getElementById('temp-selected-text');
+            textSpan.textContent = selectedText;
+            form.style.display = 'block';
+
+            // Clear previous suggestions and focus on input
+            clearSuggestionInputs();
+            document.getElementById('new-suggestion-input').focus();
+        }
+
+        function hideAnnotationForm() {
+            const form = document.getElementById('temp-selection-form');
+            form.style.display = 'none';
+            clearSuggestionInputs();
+        }
+
+        function clearSuggestionInputs() {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = '';
+            document.getElementById('new-suggestion-input').value = '';
+        }
+
+        function addSuggestion(suggestionText = '') {
+            const container = document.getElementById('suggestions-container');
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = suggestionText;
+            input.placeholder = 'Enter suggestion...';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.title = 'Remove suggestion';
+            removeBtn.addEventListener('click', function() {
+                container.removeChild(suggestionItem);
+            });
+
+            suggestionItem.appendChild(input);
+            suggestionItem.appendChild(removeBtn);
+            container.appendChild(suggestionItem);
+
+            // Focus on the new input if it was just added
+            if (!suggestionText) {
+                input.focus();
+            }
+        }
+
+        function getAllSuggestions() {
+            const inputs = document.querySelectorAll('#suggestions-container input');
+            const suggestions = [];
+            inputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    suggestions.push(value);
+                }
+            });
+            return suggestions;
+        }
+
+        // Add suggestion button
+        document.getElementById('add-suggestion-btn').addEventListener('click', function() {
+            const input = document.getElementById('new-suggestion-input');
+            const suggestionText = input.value.trim();
+            if (suggestionText) {
+                addSuggestion(suggestionText);
+                input.value = '';
+                input.focus();
+            }
+        });
+
+        // Allow Enter key to add suggestions
+        document.getElementById('new-suggestion-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('add-suggestion-btn').click();
+            }
+        });
+
+        // Confirm annotation
+        document.getElementById('confirm-annotation-btn').addEventListener('click', function() {
+            if (!tempSelection) return;
+
+            // In re-annotate mode, allow annotation even without pre-selected label
+            if (!selectedLabelId && !isReannotateMode) {
+                alert('Please select a label first!');
+                return;
+            }
+
+            // If no label selected but in re-annotate mode, show label selection
+            if (!selectedLabelId && isReannotateMode) {
+                alert('Please select a label from Step 1 before confirming the annotation.');
+                // Scroll to label selection area
+                document.querySelector('.card-header.bg-info').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const suggestions = getAllSuggestions();
+
+            // Create annotation
+            createAnnotation(
+                tempSelection.startPos,
+                tempSelection.endPos,
+                tempSelection.text,
+                suggestions
+            );
+        });
+
+        // Cancel annotation
+        document.getElementById('cancel-annotation-btn').addEventListener('click', clearTempSelection);
+
+        // Create annotation
+        function createAnnotation(startPos, endPos, selectedText, suggestions = []) {
+            fetch(`/project/{{ project.owner.id }}/{{ project.user_project_id }}/text/{{ text.id }}/add_annotation/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams({
+                    'start_index': startPos,
+                    'end_index': endPos,
+                    'label_id': selectedLabelId,
+                    'suggestions': JSON.stringify(suggestions),
+                    'is_reannotation': isReannotateMode ? 'true' : 'false'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the current annotation page to show the new annotation
+                    location.reload();
+                } else {
+                    alert('Error adding annotation: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        // Page parameter is handled in the template for the Back to Project button
+
+
+
+        // Removed saveAnnotationEdit and cancelAnnotationEdit functions
+        // Edit functionality now uses prompt for suggestions only
+
+
+        // Utility functions
+        function adjustColor(color, amount) {
+            // Simple color adjustment function
+            const usePound = color[0] === '#';
+            const col = usePound ? color.slice(1) : color;
+
+            const num = parseInt(col, 16);
+            let r = (num >> 16) + amount;
+            let g = (num >> 8 & 0x00FF) + amount;
+            let b = (num & 0x0000FF) + amount;
+
+            r = r > 255 ? 255 : r < 0 ? 0 : r;
+            g = g > 255 ? 255 : g < 0 ? 0 : g;
+            b = b > 255 ? 255 : b < 0 ? 0 : b;
+
+            return (usePound ? '#' : '') + (r << 16 | g << 8 | b).toString(16);
+        }
+
+        // Assign functions to global scope for onclick handlers
+        renderAnnotations = renderAnnotationsLocal;
+        updateAnnotationsList = updateAnnotationsListLocal;
+        updateAnnotationActions = updateAnnotationActionsLocal;
+        updateAnnotationStatus = updateAnnotationStatusLocal;
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            // Annotations are now rendered server-side, just update the UI elements
+            updateAnnotationsList();
+            updateAnnotationActions();
+            updateAnnotationStatus();
+        });
+
+        // Simplified: annotations are now rendered server-side
+        function renderAnnotationsLocal() {
+            // Since annotations are rendered server-side, reload the page to show updates
+            location.reload();
+        }
+
+        function updateAnnotationsListLocal() {
+            const container = document.getElementById('annotations-container');
+
+            if (currentAnnotations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Annotations Yet</h5>
+                        <p class="text-muted">Select a label and highlight text above to create annotations.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            currentAnnotations.forEach(ann => {
+                html += `
+                    <div class="annotation-item" data-ann-id="${ann.id}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="mb-2">
+                                    <span class="badge px-3 py-2" style="background-color: ${ann.label_color}; color: white; font-size: 14px;">
+                                        <i class="fas fa-tag"></i> ${ann.label}
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-dark" style="font-size: 16px;">"${ann.annotated_text}"</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt"></i> Position: ${ann.start_index}-${ann.end_index}
+                                    </small>
+                                </div>
+                                ${ann.suggestion ? `
+                                    <div class="alert alert-info py-2 px-3 mb-0">
+                                        <strong><i class="fas fa-lightbulb"></i> Suggestions:</strong><br>
+                                        ${ann.suggestion.split('\n').map(s => s.trim()).filter(s => s).map(s => `"${s}"`).join('<br>')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="ms-3">
+                                <button onclick="editAnnotation(${ann.id})" class="btn btn-outline-primary btn-sm me-2" title="Edit annotation">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteAnnotation(${ann.id})" class="btn btn-outline-danger btn-sm" title="Delete annotation">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Update count
+            document.getElementById('annotation-count').textContent = currentAnnotations.length;
+        }
+
+        function updateAnnotationActionsLocal() {
+            // Check if elements exist before trying to access them
+            const actions = document.getElementById('annotation-actions');
+            const annotateBtn = document.getElementById('annotate-btn');
+
+            if (!actions || !annotateBtn) {
+                // Elements don't exist, skip this function
+                return;
+            }
+
+            if (selectedLabelId && currentAnnotations.length === 0) {
+                actions.style.display = 'block';
+                annotateBtn.textContent = 'Annotate Text';
+                annotateBtn.className = 'btn btn-annotate me-3';
+            } else if (currentAnnotations.length > 0) {
+                actions.style.display = 'block';
+                annotateBtn.textContent = 'Re-Annotate Text';
+                annotateBtn.className = 'btn btn-reannotate me-3';
+            } else {
+                actions.style.display = 'none';
+            }
+        }
+
+        function updateAnnotationStatusLocal() {
+            const status = document.getElementById('annotation-status');
+            if (currentAnnotations.length > 0) {
+                status.textContent = 'Annotated';
+                status.className = 'badge bg-success ms-2';
+            } else {
+                status.textContent = 'Not Annotated';
+                status.className = 'badge bg-warning text-dark ms-2';
+            }
+        }
+
+        // Handle clicks outside to clear selections
+        document.addEventListener('click', function(e) {
+            if (!textContainer.contains(e.target) && !e.target.closest('#temp-selection-form')) {
+                clearTempSelection();
+            }
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Annotation Tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-home"></i> Welcome, {{ user.username }}!</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Welcome to the Annotation Tool. Manage your annotation projects below.</p>
+                    <a href="{% url 'project_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Project
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Your Projects</h5>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="row">
+                            {% for project in projects %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-primary">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}" class="text-decoration-none">
+                                                    {{ project.name }}
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted">{{ project.description }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">Created by {{ project.owner.username }}</small>
+                                                {% if project.owner == user %}
+                                                    <a href="{% url 'project_delete' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <h5>No projects yet</h5>
+                            <p class="text-muted">Start by creating your first annotation project.</p>
+                            <a href="{% url 'project_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Your First Project
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-edit fa-4x text-primary mb-4"></i>
+                <h1 class="display-4 mb-3">Annotation Tool</h1>
+                <p class="lead mb-4">A powerful tool for text annotation. Please log in to get started.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg me-md-2">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

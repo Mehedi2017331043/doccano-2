@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Collaborators - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-users"></i> Manage Collaborators</h4>
+                <small>{{ project.name }}</small>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Collaborators can view and annotate text in this project.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="fas fa-user-plus"></i> Add Collaborator</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="addCollaboratorForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="usernameInput" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="usernameInput" name="username" placeholder="Enter username" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="fas fa-plus"></i> Add Collaborator
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-users"></i> Current Collaborators</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if collaborators %}
+                                    <div class="list-group">
+                                        {% for collab in collaborators %}
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-user me-2"></i>
+                                                    <strong>{{ collab.user.username }}</strong>
+                                                    {% if collab.user == project.owner %}
+                                                        <span class="badge bg-primary">Owner</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if collab.user != project.owner %}
+                                                    <button onclick="removeCollaborator({{ collab.user.id }})" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-times"></i> Remove
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                        <p class="text-muted">No collaborators yet.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Project
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function removeCollaborator(userId) {
+        if (confirm('Remove this collaborator?')) {
+            fetch('/project/{{ project.owner.id }}/{{ project.user_project_id }}/remove_collaborator/' + userId + '/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing collaborator');
+                }
+            });
+        }
+    }
+
+    document.getElementById('addCollaboratorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/project/{{ project.owner.id }}/{{ project.user_project_id }}/add_collaborator/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Error adding collaborator');
+            }
+        });
+    });
+</script>
+{% endblock %}
