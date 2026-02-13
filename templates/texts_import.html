@@ -15,15 +15,18 @@
                 <div class="mb-4">
                     <h5 class="mb-3"><i class="fas fa-cog"></i> Import Type</h5>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="import_type" id="single_file_import" value="single" checked>
+                        <input class="form-check-input" type="radio" name="import_type" id="single_file_import"
+                            value="single" checked>
                         <label class="form-check-label" for="single_file_import">
                             <strong>Single File Import</strong> - Import plain text or annotated data from one CSV file
                         </label>
                     </div>
                     <div class="form-check mt-2">
-                        <input class="form-check-input" type="radio" name="import_type" id="dual_file_import" value="dual">
+                        <input class="form-check-input" type="radio" name="import_type" id="dual_file_import"
+                            value="dual">
                         <label class="form-check-label" for="dual_file_import">
-                            <strong>Dual File Import</strong> - Import text from one CSV and annotations from another CSV
+                            <strong>Dual File Import</strong> - Import text from one CSV and annotations from another
+                            CSV
                         </label>
                     </div>
                 </div>
@@ -67,10 +70,15 @@
                         <i class="fas fa-info-circle"></i>
                         <strong>Dual File Import Instructions:</strong>
                         <ul class="mt-2">
-                            <li><strong>First CSV (Texts):</strong> Must contain <code>ID</code> and <code>Text</code> columns (plus optional columns)</li>
-                            <li><strong>Second CSV (Annotations):</strong> Must contain <code>input_text_id</code>, <code>content</code>, <code>start_index</code>, <code>error_cat</code>, <code>corrections</code> columns</li>
-                            <li><strong>Mapping:</strong> <code>input_text_id</code> in annotations CSV maps to <code>ID</code> in texts CSV</li>
-                            <li><strong>Multiple annotations:</strong> Same <code>input_text_id</code> can appear multiple times for different error annotations</li>
+                            <li><strong>First CSV (Texts):</strong> Must contain <code>ID</code> and <code>Text</code>
+                                columns (plus optional columns)</li>
+                            <li><strong>Second CSV (Annotations):</strong> Must contain <code>input_text_id</code>,
+                                <code>content</code>, <code>start_index</code>, <code>error_cat</code>,
+                                <code>corrections</code> columns</li>
+                            <li><strong>Mapping:</strong> <code>input_text_id</code> in annotations CSV maps to
+                                <code>ID</code> in texts CSV</li>
+                            <li><strong>Multiple annotations:</strong> Same <code>input_text_id</code> can appear
+                                multiple times for different error annotations</li>
                         </ul>
                     </div>
 
@@ -149,7 +157,8 @@
                             <label for="csv_file" class="form-label">
                                 <i class="fas fa-file-csv"></i> Select CSV file
                             </label>
-                            <input type="file" class="form-control" name="csv_file" id="csv_file" accept=".csv" required>
+                            <input type="file" class="form-control" name="csv_file" id="csv_file" accept=".csv"
+                                required>
                             <div class="form-text">Only CSV files are accepted. Maximum file size: 10MB</div>
                         </div>
                     </div>
@@ -160,7 +169,8 @@
                             <label for="text_csv_file" class="form-label">
                                 <i class="fas fa-file-csv"></i> Text CSV File (Required)
                             </label>
-                            <input type="file" class="form-control" name="text_csv_file" id="text_csv_file" accept=".csv" required>
+                            <input type="file" class="form-control" name="text_csv_file" id="text_csv_file"
+                                accept=".csv" required>
                             <div class="form-text">CSV file containing raw texts with ID and Text columns</div>
                         </div>
 
@@ -168,7 +178,8 @@
                             <label for="annotation_csv_file" class="form-label">
                                 <i class="fas fa-file-csv"></i> Annotation CSV File (Required)
                             </label>
-                            <input type="file" class="form-control" name="annotation_csv_file" id="annotation_csv_file" accept=".csv" required>
+                            <input type="file" class="form-control" name="annotation_csv_file" id="annotation_csv_file"
+                                accept=".csv" required>
                             <div class="form-text">CSV file containing annotations</div>
                         </div>
                     </div>
@@ -181,7 +192,8 @@
                 </form>
             </div>
             <div class="card-footer text-center">
-                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}" class="btn btn-outline-secondary">
+                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}"
+                    class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Project
                 </a>
             </div>
@@ -192,11 +204,13 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle import instructions based on selection
-    document.querySelectorAll('input[name="import_type"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const importType = this.value;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Function to update visibility and required status based on import type
+        function updateImportState() {
+            const selectedRadio = document.querySelector('input[name="import_type"]:checked');
+            if (!selectedRadio) return; // Should not happen 
+
+            const importType = selectedRadio.value;
             document.getElementById('hidden_import_type').value = importType;
 
             // Toggle instructions
@@ -218,11 +232,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('annotation_csv_file').required = false;
             } else {
                 document.getElementById('csv_file').required = false;
+                // Both files are required for dual import
                 document.getElementById('text_csv_file').required = true;
-                document.getElementById('annotation_csv_file').required = false;
+                document.getElementById('annotation_csv_file').required = true;
             }
+        }
+
+        // Attach event listeners to radio buttons
+        document.querySelectorAll('input[name="import_type"]').forEach(radio => {
+            radio.addEventListener('change', updateImportState);
         });
+
+        // Run once on page load to set initial state
+        updateImportState();
     });
-});
 </script>
 {% endblock %}
