@@ -3,14 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User
-from django.core import serializers
 from django.db import transaction
 from .models import Project, Label, Text, Annotation, ProjectCollaborator
-from .forms import ProjectForm, LabelForm, TextForm, AnnotationForm
+from .forms import ProjectForm, LabelForm
+from django.core.paginator import Paginator
 import csv
 import io
 import json
-import re
 
 def home(request):
     if request.user.is_authenticated:
@@ -29,25 +28,26 @@ def project_create(request):
             project.save()
             # Create default labels for Bangla errors
             default_labels = [
-                {'name': 'SUB_VERB_AGREEMENT_ERROR', 'color': "#EA6B6B"},
-                {'name': 'SADHU_CHALIT_MIX_ERROR', 'color': "#69F869"},
-                {'name': 'PUNCTUATION_ERROR', 'color': "#8383E2"},
-                {'name': 'NON_WORD_ERROR', 'color': "#F1F14A"},
-                {'name': 'UNKNOWN_WORD', 'color': "#F455F4"},
-                {'name': 'INFLECTION_ERROR', 'color': '#00FFFF'},
-                {'name': 'NO_SPACE_ERROR', 'color': "#956F6F"},
-                {'name': 'EXTAR_SPACE_ERROR', 'color': "#41A441"},
-                {'name': 'INAPPROPRIATE_WORD_USAGE_ERROR', 'color': "#505A68"},
-                {'name': 'PREPOSITION_CONJUNCTION_ERROR', 'color': "#8E8E45"},
-                {'name': 'REPETITION_ERROR', 'color': "#985298"},
-                {'name': 'QUALITY_SENTENCE_ERROR', 'color': "#389494"},
-                {'name': 'REAL_WORD_ERROR', 'color': "#726969"},
+                {'name': 'SUB_VERB_AGREEMENT_ERROR', 'error_code': 2, 'color': "#EA6B6B"},
+                {'name': 'SADHU_CHALIT_MIX_ERROR', 'error_code': 4, 'color': "#69F869"},
+                {'name': 'PUNCTUATION_ERROR', 'error_code': 8, 'color': "#8383E2"},
+                {'name': 'NON_WORD_ERROR', 'error_code': 16, 'color': "#F1F14A"},
+                {'name': 'UNKNOWN_WORD', 'error_code': 32, 'color': "#F455F4"},
+                {'name': 'INFLECTION_ERROR', 'error_code': 64, 'color': '#00FFFF'},
+                {'name': 'NO_SPACE_ERROR', 'error_code': 128, 'color': "#956F6F"},
+                {'name': 'EXTAR_SPACE_ERROR', 'error_code': 256, 'color': "#41A441"},
+                {'name': 'INAPPROPRIATE_WORD_USAGE_ERROR', 'error_code': 512, 'color': "#505A68"},
+                {'name': 'PREPOSITION_CONJUNCTION_ERROR', 'error_code': 1024, 'color': "#8E8E45"},
+                {'name': 'REPETITION_ERROR', 'error_code': 2048, 'color': "#985298"},
+                {'name': 'QUALITY_SENTENCE_ERROR', 'error_code': 4096, 'color': "#389494"},
+                {'name': 'REAL_WORD_ERROR', 'error_code': 8192, 'color': "#726969"},
             ]
             labels_created = 0
             for label_data in default_labels:
                 try:
                     Label.objects.create(
                         name=label_data['name'],
+                        error_code=label_data['error_code'],
                         color=label_data['color'],
                         project=project,
                         created_by=request.user,
@@ -101,7 +101,6 @@ def project_detail(request, user_id, user_project_id):
                 })
             except (IndexError, TypeError, AttributeError):
                 continue
-        import json
         try:
             annotations_json = json.dumps(annotations_data, ensure_ascii=False)
         except (TypeError, ValueError, UnicodeEncodeError):
@@ -114,7 +113,7 @@ def project_detail(request, user_id, user_project_id):
         })
 
     # Pagination - 20 texts per page
-    from django.core.paginator import Paginator
+
     page_number = request.GET.get('page', 1)
     paginator = Paginator(texts_with_status, 20)
     page_obj = paginator.get_page(page_number)
@@ -325,27 +324,78 @@ def _handle_single_file_import(request, project):
 
     else:
         # Plain text import (existing functionality)
-        for row in reader:
-            try:
-                text_id = row.get('ID', row.get('id', ''))
-                text = row.get('Content', row.get('text', ''))
+        # Check if we can use optimized raw import for 2-column CSVs to preserve quotes
+        fieldnames = reader.fieldnames if reader.fieldnames else []
+        is_simple_csv = False
+        
+        # Identify ID and Content columns
+        id_col_name = next((col for col in fieldnames if col.lower() in ['id', 'input_text_id']), None)
+        text_col_name = next((col for col in fieldnames if col.lower() in ['text', 'content']), None)
+        
+        if id_col_name and text_col_name and len(fieldnames) == 2:
+            is_simple_csv = True
+            is_id_first = fieldnames.index(id_col_name) == 0
+            
+            # Reset file pointer to read raw lines
+            io_string.seek(0)
+            # Skip header
+            next(io_string, None)
+            
+            for line in io_string:
+                line = line.rstrip('\r\n')
+                if not line: continue
+                
+                try:
+                    # split only on the separator to preserve quotes in content
+                    if is_id_first:
+                        parts = line.split(',', 1)
+                        if len(parts) < 2: continue
+                        text_id = parts[0].strip()
+                        text = parts[1]
+                    else:
+                        parts = line.rsplit(',', 1)
+                        if len(parts) < 2: continue
+                        text = parts[0]
+                        text_id = parts[1].strip()
+                    
+                    # Remove null bytes for DB safety, but avoid other normalization
+                    if isinstance(text, str):
+                        text = text.replace('\x00', '')
 
-                if not text.strip():
+                    Text.objects.create(
+                        project=project,
+                        text_id=text_id,
+                        text=text,
+                    )
+                    imported_texts += 1
+                except Exception as e:
+                    # Log error but continue
+                    print(f"Error importing row: {e}")
                     continue
-
-                # Ensure text is properly encoded
-                if isinstance(text, str):
-                    text = text.strip().replace('\x00', '').replace('\r', '')
-
-                Text.objects.create(
-                    project=project,
-                    text_id=text_id,
-                    text=text,
-                )
-                imported_texts += 1
-            except Exception as e:
-                messages.warning(request, f'Error importing row: {str(e)}')
-                continue
+        else:
+            # Fallback to standard CSV reader for complex files
+            for row in reader:
+                try:
+                    text_id = row.get('ID', row.get('id', ''))
+                    text = row.get('Content', row.get('text', ''))
+    
+                    # Helper to clean text without stripping intentional whitespace
+                    if not text:
+                        continue
+    
+                    # Minimal cleanup: remove null bytes and carriage returns
+                    if isinstance(text, str):
+                        text = text.replace('\x00', '').replace('\r', '')
+    
+                    Text.objects.create(
+                        project=project,
+                        text_id=text_id,
+                        text=text,
+                    )
+                    imported_texts += 1
+                except Exception as e:
+                    messages.warning(request, f'Error importing row: {str(e)}')
+                    continue
 
         messages.success(request, f'Successfully imported {imported_texts} texts!')
 
@@ -826,7 +876,6 @@ def export_annotations(request, user_id, user_project_id):
         return response
     else:
         # CSV export
-        import csv
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{project.name}_annotations.csv"'
         writer = csv.writer(response)

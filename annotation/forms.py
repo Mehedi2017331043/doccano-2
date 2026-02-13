@@ -15,7 +15,7 @@ class LabelForm(forms.ModelForm):
 
     class Meta:
         model = Label
-        fields = ['name', 'color', 'description']
+        fields = ['name', 'error_code', 'color', 'description']
 
 class TextForm(forms.ModelForm):
     class Meta:

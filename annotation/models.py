@@ -31,6 +31,7 @@ class Project(models.Model):
 
 class Label(models.Model):
     name = models.CharField(max_length=255)
+    error_code = models.IntegerField(default=0)
     color = models.CharField(max_length=7, default='#000000')  # Hex color
     description = models.TextField(blank=True)
     is_static = models.BooleanField(default=False)  # Admin fixed labels

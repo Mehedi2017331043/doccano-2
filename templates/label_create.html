@@ -30,6 +30,16 @@
                             </div>
                         {% endif %}
                         <div class="form-text">Choose a descriptive name for your label (e.g., "Spelling Error", "Grammar Mistake")</div>
+                        <label for="{{ form.error_code.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag"></i> Error Code *
+                        </label>
+                        {{ form.error_code }}
+                        {% if form.error_code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.error_code.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Choose a error code for your label (e.g., 2)</div>
                     </div>
 
                     <div class="mb-3">
