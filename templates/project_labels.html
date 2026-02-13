@@ -36,14 +36,21 @@
                                             <p class="card-text text-muted small">No description provided</p>
                                         {% endif %}
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                Created by {{ label.created_by.username }}
-                                            </small>
-                                            {% if label.is_static %}
-                                                <span class="badge bg-secondary">Default</span>
-                                            {% else %}
-                                                <span class="badge bg-primary">Custom</span>
-                                            {% endif %}
+                                            <div>
+                                                {% if label.is_static %}
+                                                    <span class="badge bg-secondary">Default</span>
+                                                {% else %}
+                                                    <span class="badge bg-primary">Custom</span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <a href="{% url 'label_edit' user_id=project.owner.id user_project_id=project.user_project_id label_id=label.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'label_delete' user_id=project.owner.id user_project_id=project.user_project_id label_id=label.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -176,6 +176,50 @@ def label_create(request, user_id, user_project_id):
     })
 
 @login_required
+def label_edit(request, user_id, user_project_id, label_id):
+    project = get_object_or_404(Project, owner_id=user_id, user_project_id=user_project_id)
+    if project.owner != request.user and not ProjectCollaborator.objects.filter(project=project, user=request.user).exists():
+        messages.error(request, 'You do not have access to edit labels for this project.')
+        return redirect('project_detail', user_id=project.owner.id, user_project_id=project.user_project_id)
+    
+    label = get_object_or_404(Label, id=label_id, project=project)
+    
+    if request.method == 'POST':
+        form = LabelForm(request.POST, instance=label)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Label "{label.name}" updated successfully!')
+            return redirect('project_labels', user_id=project.owner.id, user_project_id=project.user_project_id)
+    else:
+        form = LabelForm(instance=label)
+        
+    return render(request, 'label_edit.html', {
+        'project': project,
+        'label': label,
+        'form': form
+    })
+
+@login_required
+def label_delete(request, user_id, user_project_id, label_id):
+    project = get_object_or_404(Project, owner_id=user_id, user_project_id=user_project_id)
+    if project.owner != request.user and not ProjectCollaborator.objects.filter(project=project, user=request.user).exists():
+        messages.error(request, 'You do not have access to delete labels for this project.')
+        return redirect('project_detail', user_id=project.owner.id, user_project_id=project.user_project_id)
+        
+    label = get_object_or_404(Label, id=label_id, project=project)
+    
+    if request.method == 'POST':
+        label_name = label.name
+        label.delete()
+        messages.success(request, f'Label "{label_name}" deleted successfully!')
+        return redirect('project_labels', user_id=project.owner.id, user_project_id=project.user_project_id)
+        
+    return render(request, 'label_delete.html', {
+        'project': project,
+        'label': label
+    })
+
+@login_required
 def texts_import(request, user_id, user_project_id):
     project = get_object_or_404(Project, owner_id=user_id, user_project_id=user_project_id)
     if project.owner != request.user:

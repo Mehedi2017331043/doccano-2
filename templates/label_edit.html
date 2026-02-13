@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Label - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Label</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate id="labelForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.error_code.id_for_label }}" class="form-label">Error Code</label>
+                            {{ form.error_code }}
+                            {% if form.error_code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.error_code.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.color.id_for_label }}" class="form-label">Color</label>
+                            <div class="input-group">
+                                {{ form.color }}
+                                <button class="btn btn-outline-secondary" type="button" id="colorPickerBtn"
+                                    style="background-color: {{ form.color.value|default:'#000000' }}; width: 40px; border: 1px solid #ced4da;"></button>
+                                <input type="color" class="form-control form-control-color visually-hidden"
+                                    id="colorPicker" value="{{ form.color.value|default:'#000000' }}"
+                                    title="Choose your color">
+                            </div>
+                            <div class="form-text">Click the color box to pick a color.</div>
+                            {% if form.color.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.color.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'project_labels' user_id=project.owner.id user_project_id=project.user_project_id %}"
+                                class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add Bootstrap classes to form fields if not already present via widget attrs
+        const inputs = document.querySelectorAll('#labelForm input[type="text"], #labelForm textarea');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+
+        // Color picker logic
+        const colorInput = document.querySelector('input[name="color"]');
+        const colorPicker = document.getElementById('colorPicker');
+        const colorPickerBtn = document.getElementById('colorPickerBtn');
+
+        if (colorInput && colorPicker && colorPickerBtn) {
+            // Initialize
+            colorPicker.value = colorInput.value;
+            colorPickerBtn.style.backgroundColor = colorInput.value;
+
+            // Open picker on button click
+            colorPickerBtn.addEventListener('click', () => {
+                colorPicker.click();
+            });
+
+            // Update text input and button when picker changes
+            colorPicker.addEventListener('input', (e) => {
+                colorInput.value = e.target.value;
+                colorPickerBtn.style.backgroundColor = e.target.value;
+            });
+
+            // Update picker and button when text input changes manually
+            colorInput.addEventListener('input', (e) => {
+                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                    colorPicker.value = e.target.value;
+                    colorPickerBtn.style.backgroundColor = e.target.value;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

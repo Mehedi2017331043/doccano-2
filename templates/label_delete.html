@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Label - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Delete Label</h3>
+            </div>
+            <div class="card-body py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-4"></i>
+                <h4 class="card-title text-dark">Are you sure you want to delete label "{{ label.name }}"?</h4>
+                <p class="card-text text-muted mb-4">
+                    This action cannot be undone. All annotations associated with this label will be lost.
+                </p>
+
+                <div class="alert alert-secondary d-inline-block text-start mb-4">
+                    <strong>Label Details:</strong>
+                    <ul class="mb-0 mt-1">
+                        <li>Name: {{ label.name }}</li>
+                        <li>Error Code: {{ label.error_code|default:"None" }}</li>
+                        <li>Color: <span class="badge rounded-pill"
+                                style="background-color: {{ label.color }}; border: 1px solid #ccc;">{{ label.color
+                                }}</span></li>
+                    </ul>
+                </div>
+
+                <form method="post"
+                    action="{% url 'label_delete' user_id=project.owner.id user_project_id=project.user_project_id label_id=label.id %}">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-center">
+                        <a href="{% url 'project_labels' user_id=project.owner.id user_project_id=project.user_project_id %}"
+                            class="btn btn-secondary me-md-2 px-4">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
