@@ -23,12 +23,11 @@ def render_with_annotations(text, annotations_json):
     annotations.sort(key=lambda x: x['start_index'])
     result = []
     last_end = 0
-
     for ann in annotations:
         start_idx = ann.get('start_index', 0)
         end_idx = ann.get('end_index', 0)
-        label = ann.get('label', 'Unknown')
-        label_color = ann.get('label_color', '#000000')
+        label = ann.get('label', 0) # label means error_code
+        label_color = ann.get('label_color', "#444040")
         suggestions = ann.get('suggestions', [])
         ann_id = ann.get('id', 0)
 

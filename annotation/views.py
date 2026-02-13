@@ -282,9 +282,9 @@ def _handle_single_file_import(request, project):
                         # Get or create label
                         label, created = Label.objects.get_or_create(
                             project=project,
-                            name=error_label,
+                            error_label=error_label,
                             defaults={
-                                'color': '#000000',
+                                'color': "#444040",
                                 'created_by': request.user
                             }
                         )
@@ -603,7 +603,7 @@ def _import_annotations_from_csv(request, csv_file, project, text_mapping, user)
             # Get or create label
             label, created = Label.objects.get_or_create(
                 project=project,
-                name=error_cat,
+                error_code=error_cat,
                 defaults={
                     'color': '#000000',
                     'created_by': user
