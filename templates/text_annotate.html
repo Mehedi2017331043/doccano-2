@@ -13,15 +13,19 @@
         position: relative !important;
         z-index: 10 !important;
     }
+
     .selected-label i {
         color: white !important;
     }
+
     .selected-label strong {
         color: white !important;
     }
+
     .selected-label small {
         color: rgba(255, 255, 255, 0.8) !important;
     }
+
     .label-indicator {
         position: fixed;
         top: 20px;
@@ -32,10 +36,11 @@
         border-radius: 8px;
         z-index: 1000;
         display: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         font-weight: bold;
         border: 2px solid white;
     }
+
     #text-container {
         border: 2px solid #dee2e6;
         border-radius: 8px;
@@ -47,9 +52,10 @@
         cursor: text;
         position: relative;
         user-select: text;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         transition: border-color 0.3s ease;
     }
+
     .annotation-span {
         position: relative;
         display: inline;
@@ -68,18 +74,20 @@
         background-clip: content-box;
         box-decoration-break: clone;
     }
+
     .annotation-span:hover {
         pointer-events: auto;
         opacity: 0.85;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
+
     .annotation-info {
         position: absolute;
         bottom: -30px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(0,0,0,0.9);
+        background: rgba(0, 0, 0, 0.9);
         color: white;
         padding: 6px 10px;
         border-radius: 6px;
@@ -90,11 +98,13 @@
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.3s ease;
-        border: 1px solid rgba(255,255,255,0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
+
     .annotation-span:hover .annotation-info {
         opacity: 1;
     }
+
     .annotation-remove-btn {
         position: absolute;
         top: -10px;
@@ -111,20 +121,24 @@
         display: none;
         z-index: 1001;
         line-height: 1;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         transition: all 0.2s ease;
     }
+
     .annotation-remove-btn:hover {
         background: #c82333;
         transform: scale(1.1);
     }
+
     .annotation-span:hover .annotation-remove-btn {
         display: block;
     }
+
     .text-selection-highlight {
         background-color: rgba(255, 255, 0, 0.4) !important;
         border-radius: 3px;
     }
+
     .annotation-form {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border: 2px solid #dee2e6;
@@ -132,21 +146,24 @@
         padding: 20px;
         margin-top: 15px;
         display: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .annotation-item {
         border: 1px solid #dee2e6;
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 15px;
         background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
     }
+
     .annotation-item:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         transform: translateY(-2px);
     }
+
     .btn-annotate {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         border: none;
@@ -157,11 +174,13 @@
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         transition: all 0.3s ease;
     }
+
     .btn-annotate:hover {
         background: linear-gradient(135deg, #218838 0%, #17a2b8 100%);
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
     }
+
     .btn-reannotate {
         background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
         border: none;
@@ -172,11 +191,13 @@
         box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
         transition: all 0.3s ease;
     }
+
     .btn-reannotate:hover {
         background: linear-gradient(135deg, #e0a800 0%, #e8590c 100%);
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
     }
+
     .suggestion-input {
         border: 2px solid #ced4da;
         border-radius: 6px;
@@ -186,17 +207,20 @@
         font-size: 14px;
         transition: border-color 0.3s ease;
     }
+
     .suggestion-input:focus {
         border-color: #007bff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         outline: none;
     }
+
     .temp-selection {
         background-color: rgba(255, 193, 7, 0.3) !important;
         border: 2px dashed #ffc107 !important;
         border-radius: 4px;
         animation: pulse 1.5s infinite;
     }
+
     .suggestion-item {
         display: flex;
         align-items: center;
@@ -207,6 +231,7 @@
         margin-bottom: 8px;
         font-size: 14px;
     }
+
     .suggestion-item input {
         flex: 1;
         border: none;
@@ -214,6 +239,7 @@
         outline: none;
         font-size: 14px;
     }
+
     .suggestion-item button {
         background: none;
         border: none;
@@ -224,14 +250,24 @@
         font-size: 12px;
         margin-left: 8px;
     }
+
     .suggestion-item button:hover {
         background: #dc3545;
         color: white;
     }
+
     @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        100% {
+            opacity: 1;
+        }
     }
 </style>
 {% endblock %}
@@ -266,13 +302,14 @@
                 <p class="text-muted">Click on a label to select it for annotation.</p>
                 <div class="d-flex flex-wrap gap-3" id="label-buttons">
                     {% for label in labels %}
-                        <button class="btn btn-outline-primary label-btn px-1.5 py-1" data-label-id="{{ label.id }}" data-label-name="{{ label.name }}" data-color="{{ label.color }}">
-                            <i class="fas fa-circle me-2" style="color: {{ label.color }};"></i>
-                            <strong>{{ label.name }}</strong>
-                            {% if label.description %}
-                                <br><small class="text-muted">{{ label.description|truncatechars:30 }}</small>
-                            {% endif %}
-                        </button>
+                    <button class="btn btn-outline-primary label-btn px-1.5 py-1" data-label-id="{{ label.id }}"
+                        data-label-name="{{ label.name }}" data-color="{{ label.color }}">
+                        <i class="fas fa-circle me-2" style="color: {{ label.color }};"></i>
+                        <strong>{{ label.name }}</strong>
+                        {% if label.description %}
+                        <br><small class="text-muted">{{ label.description|truncatechars:30 }}</small>
+                        {% endif %}
+                    </button>
                     {% endfor %}
                 </div>
             </div>
@@ -285,7 +322,8 @@
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
-                    <strong>Instructions:</strong> First select a label above, then highlight the error text below. The selected text will be underlined with the label's color.
+                    <strong>Instructions:</strong> First select a label above, then highlight the error text below. The
+                    selected text will be underlined with the label's color.
                 </div>
 
                 <!-- Temporary Selection Form -->
@@ -299,12 +337,14 @@
                             <!-- Suggestions will be added here dynamically -->
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <input type="text" id="new-suggestion-input" class="form-control" placeholder="Enter a suggestion..." style="flex: 1;">
+                            <input type="text" id="new-suggestion-input" class="form-control"
+                                placeholder="Enter a suggestion..." style="flex: 1;">
                             <button id="add-suggestion-btn" class="btn btn-outline-primary" type="button">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                         </div>
-                        <small class="text-muted d-block mt-1">Add suggestions one by one. Each suggestion will be saved separately.</small>
+                        <small class="text-muted d-block mt-1">Add suggestions one by one. Each suggestion will be saved
+                            separately.</small>
                     </div>
                     <div class="d-flex gap-2">
                         <button id="confirm-annotation-btn" class="btn btn-annotate">
@@ -334,58 +374,64 @@
             </div>
             <div class="card-body" id="annotations-container">
                 {% if annotations %}
-                    {% for ann in annotations %}
-                        <div class="annotation-item" data-ann-id="{{ ann.id }}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <div class="mb-2">
-                                        <span class="badge px-3 py-2" style="background-color: {{ ann.label.color }}; color: white; font-size: 14px;">
-                                            <i class="fas fa-tag"></i> {{ ann.label.name }}
-                                        </span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <strong class="text-dark" style="font-size: 16px;">"{{ ann.annotated_text }}"</strong>
-                                    </div>
-                                    <div class="mb-2">
-                                        <small class="text-muted">
-                                            <i class="fas fa-map-marker-alt"></i> Position: {{ ann.start_index }}-{{ ann.end_index }}
-                                            {% if ann.user != request.user %}
-                                                <span class="ms-2"><i class="fas fa-user"></i> Annotated by: {{ ann.user.username }}</span>
-                                            {% else %}
-                                                <span class="ms-2"><i class="fas fa-user-check"></i> Your annotation</span>
-                                            {% endif %}
-                                        </small>
-                                    </div>
-                                    {% if ann.suggestions %}
-                                        <div class="alert alert-info py-2 px-3 mb-0">
-                                            <strong><i class="fas fa-lightbulb"></i> Suggestions:</strong><br>
-                                            {% for suggestion in ann.suggestions %}
-                                                " {{ suggestion }}<br>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="ms-3">
-                                    <button onclick="editAnnotation({{ ann.id }})" class="btn btn-outline-primary btn-sm me-2" title="Edit annotation">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button onclick="deleteAnnotation({{ ann.id }})" class="btn btn-outline-danger btn-sm" title="Delete annotation">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                {% for ann in annotations %}
+                <div class="annotation-item" data-ann-id="{{ ann.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="mb-2">
+                                <span class="badge px-3 py-2"
+                                    style="background-color: {{ ann.label.color }}; color: white; font-size: 14px;">
+                                    <i class="fas fa-tag"></i> {{ ann.label.name }}
+                                </span>
                             </div>
+                            <div class="mb-2">
+                                <strong class="text-dark" style="font-size: 16px;">"{{ ann.annotated_text }}"</strong>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> Position: {{ ann.start_index }}-{{
+                                    ann.end_index }}
+                                    {% if ann.user != request.user %}
+                                    <span class="ms-2"><i class="fas fa-user"></i> Annotated by: {{ ann.user.username
+                                        }}</span>
+                                    {% else %}
+                                    <span class="ms-2"><i class="fas fa-user-check"></i> Your annotation</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% if ann.suggestions %}
+                            <div class="alert alert-info py-2 px-3 mb-0">
+                                <strong><i class="fas fa-lightbulb"></i> Suggestions:</strong><br>
+                                {% for suggestion in ann.suggestions %}
+                                " {{ suggestion }}<br>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No Annotations Yet</h5>
-                        <p class="text-muted">Select a label and highlight text above to create annotations.</p>
+                        <div class="ms-3">
+                            <button onclick="editAnnotation({{ ann.id }})" class="btn btn-outline-primary btn-sm me-2"
+                                title="Edit annotation">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteAnnotation({{ ann.id }})" class="btn btn-outline-danger btn-sm"
+                                title="Delete annotation">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Annotations Yet</h5>
+                    <p class="text-muted">Select a label and highlight text above to create annotations.</p>
+                </div>
                 {% endif %}
             </div>
             <div class="card-footer text-center">
-                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}?page={{ request.GET.page|default:'1' }}" class="btn btn-outline-secondary">
+                <a href="{% url 'project_detail' user_id=project.owner.id user_project_id=project.user_project_id %}?page={{ request.GET.page|default:'1' }}"
+                    class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Project
                 </a>
             </div>
@@ -431,54 +477,100 @@
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload page to show updated server-rendered annotations
-                location.reload();
-            } else {
-                alert('Error deleting annotation');
-            }
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload page to show updated server-rendered annotations
+                    location.reload();
+                } else {
+                    alert('Error deleting annotation');
+                }
+            });
     }
 
     function editAnnotation(annId) {
-        const ann = currentAnnotations.find(a => a.id === parseInt(annId));
-        if (!ann) return;
+        const item = document.querySelector(`.annotation-item[data-ann-id="${annId}"]`);
+        if (!item || item.querySelector('.edit-suggestions-form')) return;
 
-        // Show suggestion edit form - convert array to newline-separated for editing
-        const currentSuggestions = Array.isArray(ann.suggestions) ? ann.suggestions : [];
-        const suggestionText = prompt('Edit suggestions for this annotation (one per line):', currentSuggestions.join('\n'));
-        if (suggestionText !== null) { // User didn't cancel
-            // Convert back to array and update
-            const suggestions = suggestionText.split('\n').map(s => s.trim()).filter(s => s);
-            updateAnnotationSuggestion(annId, suggestions);
+        // Get current suggestions
+        const suggestionBlock = item.querySelector('.alert-info');
+        let currentSuggestions = [];
+
+        if (suggestionBlock) {
+            // Extract text nodes from the block, ignoring strong tag and br
+            const content = suggestionBlock.innerHTML;
+            // Split by br tags, clean up
+            const parts = content.split('<br>');
+            currentSuggestions = parts
+                .map(p => p.replace(/<[^>]*>/g, '').replace(/"/g, '').trim())
+                .filter(p => p && !p.startsWith('Suggestions:'));
         }
+
+        // Create edit form
+        const formDiv = document.createElement('div');
+        formDiv.className = 'edit-suggestions-form mt-2 p-2 bg-light border rounded';
+        formDiv.innerHTML = `
+            <label class="form-label small fw-bold mb-1">Edit Suggestions (one per line):</label>
+            <textarea class="form-control mb-2 suggestion-edit-input form-control-sm" rows="2" style="font-size: 0.9rem;">${currentSuggestions.join('\n')}</textarea>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-sm btn-secondary cancel-edit-btn py-0 px-2">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary save-edit-btn py-0 px-2">Save</button>
+            </div>
+        `;
+
+        // Hide original display if it exists
+        if (suggestionBlock) suggestionBlock.style.display = 'none';
+
+        // Append form before the action buttons
+        const actionButtonsDiv = item.querySelector('.ms-3'); // Div containing edit/delete buttons
+        // Insert form as the last child of the flex-grow-1 div (text/content area)
+        const contentArea = item.querySelector('.flex-grow-1');
+        contentArea.appendChild(formDiv);
+
+        // Add event listeners
+        formDiv.querySelector('.cancel-edit-btn').addEventListener('click', () => {
+            formDiv.remove();
+            if (suggestionBlock) suggestionBlock.style.display = 'block';
+        });
+
+        formDiv.querySelector('.save-edit-btn').addEventListener('click', () => {
+            const newText = formDiv.querySelector('textarea').value;
+            const newSuggestions = newText.split('\n').map(s => s.trim()).filter(s => s);
+            updateAnnotationSuggestion(annId, newSuggestions);
+        });
     }
 
     function updateAnnotationSuggestion(annId, suggestions) {
-        fetch(`/project/{{ project.id }}/text/{{ text.id }}/update_annotation/${annId}/`, {
+        // Ensure csrfToken is available
+        const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/project/{{ project.owner.id }}/{{ project.user_project_id }}/text/{{ text.id }}/update_annotation/${annId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': csrfToken
+                'X-CSRFToken': token
             },
             body: new URLSearchParams({
                 'suggestions': JSON.stringify(suggestions)
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload page to show updated server-rendered annotations
-                location.reload();
-            } else {
-                alert('Error updating suggestions: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating suggestions: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating suggestion. Please try again.');
+            });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -502,7 +594,7 @@
 
         // Step 1: Label Selection
         document.querySelectorAll('.label-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 console.log('Label clicked:', this.dataset.labelName);
 
                 // Remove previous selection
@@ -532,7 +624,7 @@
         let selectionTimeout;
         let isReannotateMode = false;
 
-        textContainer.addEventListener('mouseup', function(e) {
+        textContainer.addEventListener('mouseup', function (e) {
             // Allow text selection without label in re-annotate mode
             if (!selectedLabelId && !isReannotateMode) {
                 alert('Please select a label first!');
@@ -795,7 +887,7 @@
 
         function getTextPositionFromRange(container, offset) {
             // Walk through the DOM and map to original text positions
-            offset-=42; // Adjust the precalculated offset for selection shift issue for same word multiple positions
+            offset -= 42; // Adjust the precalculated offset for selection shift issue for same word multiple positions
             console.log('Adjusted offset in getTextPositionFromRange:', offset);
             let position = 0;
             let found = false;
@@ -836,7 +928,7 @@
                             }
                         }
                     } else if (node.classList.contains('annotation-info') ||
-                               node.classList.contains('annotation-remove-btn')) {
+                        node.classList.contains('annotation-remove-btn')) {
                         // Skip annotation UI elements
                         return;
                     } else {
@@ -870,8 +962,8 @@
                         offset += node.textContent.length;
                     }
                 } else if (node.nodeType === Node.ELEMENT_NODE &&
-                          !node.classList.contains('annotation-info') &&
-                          !node.classList.contains('annotation-remove-btn')) {
+                    !node.classList.contains('annotation-info') &&
+                    !node.classList.contains('annotation-remove-btn')) {
                     for (let child of node.childNodes) {
                         walkAnnotation(child);
                         if (found) return;
@@ -989,7 +1081,7 @@
             removeBtn.type = 'button';
             removeBtn.innerHTML = '<i class="fas fa-times"></i>';
             removeBtn.title = 'Remove suggestion';
-            removeBtn.addEventListener('click', function() {
+            removeBtn.addEventListener('click', function () {
                 container.removeChild(suggestionItem);
             });
 
@@ -1016,7 +1108,7 @@
         }
 
         // Add suggestion button
-        document.getElementById('add-suggestion-btn').addEventListener('click', function() {
+        document.getElementById('add-suggestion-btn').addEventListener('click', function () {
             const input = document.getElementById('new-suggestion-input');
             const suggestionText = input.value.trim();
             if (suggestionText) {
@@ -1027,7 +1119,7 @@
         });
 
         // Allow Enter key to add suggestions
-        document.getElementById('new-suggestion-input').addEventListener('keypress', function(e) {
+        document.getElementById('new-suggestion-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 document.getElementById('add-suggestion-btn').click();
@@ -1035,7 +1127,7 @@
         });
 
         // Confirm annotation
-        document.getElementById('confirm-annotation-btn').addEventListener('click', function() {
+        document.getElementById('confirm-annotation-btn').addEventListener('click', function () {
             if (!tempSelection) return;
 
             // In re-annotate mode, allow annotation even without pre-selected label
@@ -1082,18 +1174,18 @@
                     'is_reannotation': isReannotateMode ? 'true' : 'false'
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Reload the current annotation page to show the new annotation
-                    location.reload();
-                } else {
-                    alert('Error adding annotation: ' + (data.error || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                alert('Error: ' + error.message);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the current annotation page to show the new annotation
+                        location.reload();
+                    } else {
+                        alert('Error adding annotation: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
         }
 
         // Page parameter is handled in the template for the Back to Project button
@@ -1129,7 +1221,7 @@
         updateAnnotationStatus = updateAnnotationStatusLocal;
 
         // Initialize on page load
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             // Annotations are now rendered server-side, just update the UI elements
             updateAnnotationsList();
             updateAnnotationActions();
@@ -1236,11 +1328,11 @@
         }
 
         // Handle clicks outside to clear selections
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!textContainer.contains(e.target) && !e.target.closest('#temp-selection-form')) {
                 clearTempSelection();
             }
         });
-});
+    });
 </script>
 {% endblock %}
